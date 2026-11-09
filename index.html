@@ -241,6 +241,8 @@
     .quantity button { width:30px; height:30px; border:1px solid var(--line); border-radius:50%; background:#fff; color:var(--wine); font-size:18px; cursor:pointer; }
     .cart-foot { padding:18px 22px max(20px,env(safe-area-inset-bottom)); border-top:1px solid var(--line); background:#fff; }
     .cart-total { display:flex; justify-content:space-between; margin-bottom:14px; color:var(--wine); font-size:18px; font-weight:700; }
+    .cart-actions { display:grid; gap:9px; }
+    .cart-copy-secondary { background:#f4e8e3; color:var(--wine); }
     .cart-copy { width:100%; border:0; border-radius:12px; padding:14px; background:var(--wine); color:#fff; font-weight:700; font-size:14px; cursor:pointer; }
     .cart-copy:disabled { opacity:.45; cursor:not-allowed; }
     .cart-note { margin:9px 0 0; color:var(--muted); font-size:11px; text-align:center; }
@@ -375,6 +377,7 @@
   <footer>
     <strong>Cantina da Tetê</strong>
     <span>Com fé, servimos com amor. ♡</span>
+    <span><a href="mailto:cantinasttete@gmail.com" style="color:inherit;text-decoration:none">cantinasttete@gmail.com</a></span>
   </footer>
 
 <script>
@@ -412,7 +415,7 @@
   fab.setAttribute('aria-label','Abrir meu pedido');
   const backdrop = document.createElement('div'); backdrop.className='cart-backdrop';
   const panel = document.createElement('aside'); panel.className='cart-panel'; panel.setAttribute('aria-label','Resumo do pedido'); panel.setAttribute('aria-hidden','true');
-  panel.innerHTML='<div class="cart-head"><h2>Meu pedido</h2><button class="cart-close" type="button" aria-label="Fechar">×</button></div><div class="cart-content" id="cart-content"></div><div class="cart-foot"><div class="cart-total"><span>Total</span><span id="cart-total">R$ 0,00</span></div><button class="cart-copy" id="cart-copy" type="button" disabled>Copiar resumo do pedido</button><p class="cart-note">Este resumo não é enviado automaticamente. Copie para compartilhar.</p></div>';
+  panel.innerHTML='<div class="cart-head"><h2>Meu pedido</h2><button class="cart-close" type="button" aria-label="Fechar">×</button></div><div class="cart-content" id="cart-content"></div><div class="cart-foot"><div class="cart-total"><span>Total</span><span id="cart-total">R$ 0,00</span></div><div class="cart-actions"><button class="cart-copy" id="cart-email" type="button" disabled>Enviar pedido por e-mail</button><button class="cart-copy cart-copy-secondary" id="cart-copy" type="button" disabled>Copiar resumo</button></div><p class="cart-note">O e-mail será aberto no seu aplicativo para você conferir e enviar.</p></div>';
   const toast=document.createElement('div'); toast.className='toast'; toast.setAttribute('role','status'); toast.setAttribute('aria-live','polite');
   document.body.append(fab,backdrop,panel,toast);
   let toastTimer;
@@ -428,6 +431,7 @@
     document.getElementById('cart-count').textContent=qty;
     document.getElementById('cart-total').textContent=money(total);
     document.getElementById('cart-copy').disabled=!entries.length;
+    document.getElementById('cart-email').disabled=!entries.length;
     const content=document.getElementById('cart-content'); content.replaceChildren();
     if(!entries.length){const empty=document.createElement('p');empty.className='cart-empty';empty.textContent='Seu pedido está vazio. Toque em “+ Adicionar” nos itens do cardápio.';content.append(empty);return;}
     entries.forEach(([id,item])=>{
@@ -442,6 +446,15 @@
       controls.append(minus,number,plus);line.append(info,controls);content.append(line);
     });
   }
+  document.getElementById('cart-email').addEventListener('click',()=>{
+    const entries=[...cart.values()].filter(v=>v.qty>0);
+    if(!entries.length)return;
+    const total=entries.reduce((s,v)=>s+v.qty*v.price,0);
+    const lines=['Olá! Gostaria de fazer este pedido na Cantina da Tete:','',...entries.map(v=>v.qty+'x '+v.name+' — '+money(v.price*v.qty)),'','Total: '+money(total)];
+    const subject=encodeURIComponent('Pedido - Cantina da Tete');
+    const body=encodeURIComponent(lines.join('\n'));
+    window.location.href='mailto:cantinasttete@gmail.com?subject='+subject+'&body='+body;
+  });
   document.getElementById('cart-copy').addEventListener('click',async()=>{
     const entries=[...cart.values()].filter(v=>v.qty>0);
     const lines=['Pedido — Cantina da Tete','',...entries.map(v=>v.qty+'x '+v.name+' — '+money(v.price*v.qty)),'','Total: '+money(entries.reduce((s,v)=>s+v.qty*v.price,0))];
