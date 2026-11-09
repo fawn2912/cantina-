@@ -346,11 +346,13 @@
         <p>Confira nossas opções e preços</p>
       </div>
 
-      <form id="order-form"><div class="customer-box"><label for="customer-name">Seu nome</label><input id="customer-name" name="nome" type="text" placeholder="Digite seu nome" autocomplete="name" required><p>Marque os produtos que deseja e escolha a quantidade.</p></div><div class="menu-grid">
+      <form id="order-form"><div class="customer-box"><label for="customer-name">Seu nome</label><input id="customer-name" name="nome" type="text" placeholder="Digite seu nome" autocomplete="name" required><label for="customer-email" style="margin-top:14px">Seu e-mail</label><input id="customer-email" name="email" type="email" placeholder="Digite seu e-mail" autocomplete="email" required><p>Marque os produtos que deseja e escolha a quantidade.</p></div><div class="menu-grid">
         <article class="menu-card">
           <div class="card-icon" aria-hidden="true">🥟</div>
           <h3>Pastéis, empadão e salgados</h3>
-          <div class="item"><span class="item-name">Pastel<span class="detail">Carne, queijo ou pizza</span></span><span class="price">R$ 9,00</span></div>
+          <div class="item"><span class="item-name">Pastel de carne</span><span class="price">R$ 9,00</span></div>
+          <div class="item"><span class="item-name">Pastel de queijo</span><span class="price">R$ 9,00</span></div>
+          <div class="item"><span class="item-name">Pastel de pizza</span><span class="price">R$ 9,00</span></div>
           <div class="item"><span class="item-name">Empadão de frango</span><span class="price">R$ 9,00</span></div>
           <div class="item"><span class="item-name">Risole de camarão</span><span class="price">R$ 8,00</span></div>
           <div class="item"><span class="item-name">Salgado frito ou assado<span class="detail">Coxinha, bolinho de aipim, cheeseburguer ou joelho</span></span><span class="price">R$ 6,00</span></div>
@@ -408,15 +410,17 @@
   form.addEventListener('submit',(event)=>{
     event.preventDefault();
     const customer=document.getElementById('customer-name').value.trim();
+    const customerEmail=document.getElementById('customer-email').value.trim();
     const chosen=[...form.querySelectorAll('.menu-card .item')].filter(row=>row.querySelector('.item-check').checked);
     if(!customer){document.getElementById('customer-name').focus();return;}
+    if(!customerEmail){document.getElementById('customer-email').focus();return;}
     if(!chosen.length){alert('Selecione pelo menos um produto do cardápio.');return;}
     const lines=chosen.map(row=>{
       const name=row.querySelector('.item-check').value;
       const qty=Number(row.querySelector('.qty-select').value);
       return qty+'x '+name+' — '+row.dataset.price;
     });
-    const body='Olá! Meu nome é '+customer+' e gostaria de fazer este pedido:\\n\\n'+lines.join('\\n');
+    const body='Olá! Gostaria de fazer este pedido.\\n\\nNome: '+customer+'\\nE-mail para contato: '+customerEmail+'\\n\\nItens selecionados:\\n'+lines.join('\\n');
     location.href='mailto:cantinasttete@gmail.com?subject='+encodeURIComponent('Pedido - Cantina da Tete')+'&body='+encodeURIComponent(body);
   });
 })();
