@@ -222,6 +222,14 @@
     .order-submit:hover{background:var(--wine-dark)}
     @media(max-width:760px){.customer-box{padding:16px}.item{grid-template-columns:minmax(0,1fr) auto}.pick-item{font-size:13px}}
 
+    /* Sabores de pastel em opções individuais */
+    .item.pastel-option{display:grid;grid-template-columns:minmax(0,1fr) auto auto;align-items:center;gap:10px;padding:13px 12px;margin:9px 0;border:1px solid var(--line);border-radius:13px;background:#fffaf7;box-shadow:0 4px 12px rgba(83,35,34,.045)}
+    .item.pastel-option .pick-item{font-weight:700;color:var(--ink)}
+    .item.pastel-option .pastel-price{display:inline-block;padding:6px 9px;border-radius:8px;background:#f3e3dc;color:var(--wine);font-size:13px;font-weight:800;white-space:nowrap}
+    .item.pastel-option .qty-select{width:64px}
+    .item.pastel-option:has(.item-check:checked){border-color:var(--wine);background:#fff3ee;box-shadow:0 0 0 2px rgba(112,33,43,.08)}
+    @media(max-width:480px){.item.pastel-option{grid-template-columns:minmax(0,1fr) auto;gap:8px}.item.pastel-option .pick-item{grid-column:1}.item.pastel-option .pastel-price{grid-column:1;grid-row:2;justify-self:start;margin-left:28px}.item.pastel-option .qty-select{grid-column:2;grid-row:1 / span 2}}
+
     /* Experiência interativa do cardápio */
     .menu-tools { max-width: 720px; margin: 0 auto 25px; }
     .search-wrap { display:flex; align-items:center; gap:10px; background:#fff; border:1px solid var(--line); border-radius:14px; padding:0 15px; box-shadow:0 5px 18px rgba(83,35,34,.04); }
@@ -393,8 +401,10 @@
   const form=document.getElementById('order-form');
   if(!form)return;
   document.querySelectorAll('.menu-card .item').forEach((row)=>{
-    const name=row.querySelector('.item-name').innerText.replace(/\\s+/g,' ').trim();
+    const name=row.querySelector('.item-name').innerText.replace(/\s+/g,' ').trim();
     const price=row.querySelector('.price').textContent.trim();
+    const priceTag=document.createElement('span');priceTag.className='price pastel-price';priceTag.textContent=price;
+    if(name.toLowerCase().startsWith('pastel de '))row.classList.add('pastel-option');
     const label=document.createElement('label');
     label.className='pick-item';
     const check=document.createElement('input');
@@ -404,7 +414,7 @@
     const qty=document.createElement('select');qty.className='qty-select';qty.setAttribute('aria-label','Quantidade de '+name);qty.disabled=true;
     for(let n=1;n<=10;n++){const option=document.createElement('option');option.value=n;option.textContent=n;qty.append(option);}
     check.addEventListener('change',()=>{qty.disabled=!check.checked;});
-    row.replaceChildren(label,qty);
+    row.replaceChildren(label,priceTag,qty);
     row.dataset.price=price;
   });
   form.addEventListener('submit',(event)=>{
@@ -420,7 +430,7 @@
       const qty=Number(row.querySelector('.qty-select').value);
       return qty+'x '+name+' — '+row.dataset.price;
     });
-    const body='Olá! Gostaria de fazer este pedido.\\n\\nNome: '+customer+'\\nE-mail para contato: '+customerEmail+'\\n\\nItens selecionados:\\n'+lines.join('\\n');
+    const body='Olá! Gostaria de fazer este pedido.\n\nNome: '+customer+'\nE-mail para contato: '+customerEmail+'\n\nItens selecionados:\n'+lines.join('\n');
     location.href='mailto:cantinasttete@gmail.com?subject='+encodeURIComponent('Pedido - Cantina da Tete')+'&body='+encodeURIComponent(body);
   });
 })();
