@@ -330,16 +330,6 @@
         <p>Confira nossas opções e preços</p>
       </div>
 
-      <div class="menu-tools" aria-label="Ferramentas do cardápio">
-        <label class="search-wrap"><span aria-hidden="true">⌕</span><input id="menu-search" type="search" placeholder="Buscar no cardápio..." aria-label="Buscar item no cardápio"></label>
-        <div class="filter-row" role="group" aria-label="Filtrar por categoria">
-          <button class="filter-chip is-active" type="button" data-filter="todos" aria-pressed="true">Tudo</button>
-          <button class="filter-chip" type="button" data-filter="Pastéis, empadão e salgados" aria-pressed="false">Salgados</button>
-          <button class="filter-chip" type="button" data-filter="Bebidas" aria-pressed="false">Bebidas</button>
-          <button class="filter-chip" type="button" data-filter="Doces" aria-pressed="false">Doces</button>
-        </div>
-        <p class="results-count" id="results-count" aria-live="polite">Explore nossas opções</p>
-      </div>
       <div class="menu-grid">
         <article class="menu-card">
           <div class="card-icon" aria-hidden="true">🥟</div>
@@ -382,106 +372,67 @@
 
 <script>
 (() => {
-  const cards = [...document.querySelectorAll('.menu-card')];
-  const search = document.getElementById('menu-search');
-  const filters = [...document.querySelectorAll('.filter-chip')];
-  const countLabel = document.getElementById('results-count');
   const cart = new Map();
-  const money = value => value.toLocaleString('pt-BR', {style:'currency',currency:'BRL'});
-  const allItems = [];
+  const money = n => n.toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+  const cards = [...document.querySelectorAll('.menu-card')];
   cards.forEach(card => {
-    const category = card.querySelector('h3').textContent.trim();
     card.querySelectorAll('.item').forEach(row => {
-      const name = row.querySelector('.item-name').innerText.replace(/\n/g,' ').replace(/\s+/g,' ').trim();
-      const priceText = row.querySelector('.price').textContent.replace('R
-</html>,'').trim().replace('.','').replace(',','.');
-      const price = Number(priceText);
-      const id = category + '|' + name;
-      allItems.push({id,name,price,category,row,card});
+      const name = row.querySelector('.item-name').innerText.replace(/\\s+/g,' ').trim();
+      const price = Number(row.querySelector('.price').textContent.replace('R$','').trim().replace('.','').replace(',','.'));
+      const id = name;
       const add = document.createElement('button');
-      add.type = 'button'; add.className = 'item-action'; add.textContent = '+ Adicionar';
-      add.setAttribute('aria-label', 'Adicionar ' + name + ' ao pedido');
-      add.addEventListener('click', () => {
-        const current = cart.get(id) || {name,price,qty:0};
-        current.qty += 1; cart.set(id,current); renderCart();
-        showToast(name + ' adicionado');
+      add.type='button'; add.className='item-action'; add.textContent='+ Adicionar';
+      add.addEventListener('click',()=>{
+        const item=cart.get(id)||{name,price,qty:0}; item.qty++; cart.set(id,item); render();
+        toast.textContent=name+' adicionado ao pedido'; toast.classList.add('show');
+        setTimeout(()=>toast.classList.remove('show'),1600);
       });
-      row.appendChild(add);
+      row.append(add);
     });
   });
-  const tools = document.querySelector('.menu-tools');
-  const fab = document.createElement('button');
-  fab.type='button'; fab.className='cart-fab'; fab.innerHTML='Meu pedido <span class="cart-count" id="cart-count">0</span>';
-  fab.setAttribute('aria-label','Abrir meu pedido');
-  const backdrop = document.createElement('div'); backdrop.className='cart-backdrop';
-  const panel = document.createElement('aside'); panel.className='cart-panel'; panel.setAttribute('aria-label','Resumo do pedido'); panel.setAttribute('aria-hidden','true');
+  const fab=document.createElement('button'); fab.type='button'; fab.className='cart-fab'; fab.innerHTML='Meu pedido <span class="cart-count" id="cart-count">0</span>';
+  const backdrop=document.createElement('div'); backdrop.className='cart-backdrop';
+  const panel=document.createElement('aside'); panel.className='cart-panel'; panel.setAttribute('aria-label','Resumo do pedido'); panel.setAttribute('aria-hidden','true');
   panel.innerHTML='<div class="cart-head"><h2>Meu pedido</h2><button class="cart-close" type="button" aria-label="Fechar">×</button></div><div class="cart-content" id="cart-content"></div><div class="cart-foot"><div class="cart-total"><span>Total</span><span id="cart-total">R$ 0,00</span></div><div class="cart-actions"><button class="cart-copy" id="cart-email" type="button" disabled>Enviar pedido por e-mail</button><button class="cart-copy cart-copy-secondary" id="cart-copy" type="button" disabled>Copiar resumo</button></div><p class="cart-note">O e-mail será aberto no seu aplicativo para você conferir e enviar.</p></div>';
-  const toast=document.createElement('div'); toast.className='toast'; toast.setAttribute('role','status'); toast.setAttribute('aria-live','polite');
+  const toast=document.createElement('div'); toast.className='toast'; toast.setAttribute('role','status');
   document.body.append(fab,backdrop,panel,toast);
-  let toastTimer;
-  function showToast(message){toast.textContent=message;toast.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>toast.classList.remove('show'),1800);}
-  function openCart(){backdrop.classList.add('open');panel.classList.add('open');panel.setAttribute('aria-hidden','false');document.body.style.overflow='hidden';panel.querySelector('.cart-close').focus();}
-  function closeCart(){backdrop.classList.remove('open');panel.classList.remove('open');panel.setAttribute('aria-hidden','true');document.body.style.overflow='';fab.focus();}
-  fab.addEventListener('click',openCart); backdrop.addEventListener('click',closeCart); panel.querySelector('.cart-close').addEventListener('click',closeCart);
-  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&panel.classList.contains('open'))closeCart();});
-  function renderCart(){
-    const entries=[...cart.entries()].filter(([,v])=>v.qty>0);
-    const qty=entries.reduce((sum,[,v])=>sum+v.qty,0);
-    const total=entries.reduce((sum,[,v])=>sum+v.qty*v.price,0);
-    document.getElementById('cart-count').textContent=qty;
-    document.getElementById('cart-total').textContent=money(total);
-    document.getElementById('cart-copy').disabled=!entries.length;
-    document.getElementById('cart-email').disabled=!entries.length;
-    const content=document.getElementById('cart-content'); content.replaceChildren();
-    if(!entries.length){const empty=document.createElement('p');empty.className='cart-empty';empty.textContent='Seu pedido está vazio. Toque em “+ Adicionar” nos itens do cardápio.';content.append(empty);return;}
-    entries.forEach(([id,item])=>{
+  function open(){backdrop.classList.add('open');panel.classList.add('open');panel.setAttribute('aria-hidden','false');document.body.style.overflow='hidden';}
+  function close(){backdrop.classList.remove('open');panel.classList.remove('open');panel.setAttribute('aria-hidden','true');document.body.style.overflow='';}
+  fab.addEventListener('click',open); backdrop.addEventListener('click',close); panel.querySelector('.cart-close').addEventListener('click',close);
+  document.addEventListener('keydown',e=>{if(e.key==='Escape')close();});
+  function render(){
+    const items=[...cart.entries()].filter(([,v])=>v.qty>0);
+    document.getElementById('cart-count').textContent=items.reduce((s,[,v])=>s+v.qty,0);
+    document.getElementById('cart-total').textContent=money(items.reduce((s,[,v])=>s+v.qty*v.price,0));
+    document.getElementById('cart-email').disabled=!items.length;
+    document.getElementById('cart-copy').disabled=!items.length;
+    const area=document.getElementById('cart-content'); area.replaceChildren();
+    if(!items.length){const p=document.createElement('p');p.className='cart-empty';p.textContent='Seu pedido está vazio. Escolha os itens no cardápio.';area.append(p);return;}
+    items.forEach(([id,v])=>{
       const line=document.createElement('div');line.className='cart-line';
-      const info=document.createElement('div');const title=document.createElement('strong');title.textContent=item.name;const sub=document.createElement('small');sub.textContent=money(item.price)+' cada';info.append(title,sub);
+      const info=document.createElement('div');const title=document.createElement('strong');title.textContent=v.name;const sub=document.createElement('small');sub.textContent=money(v.price)+' cada';info.append(title,sub);
       const controls=document.createElement('div');controls.className='quantity';
-      const minus=document.createElement('button');minus.type='button';minus.textContent='−';minus.setAttribute('aria-label','Diminuir '+item.name);
-      const number=document.createElement('span');number.textContent=item.qty;
-      const plus=document.createElement('button');plus.type='button';plus.textContent='+';plus.setAttribute('aria-label','Aumentar '+item.name);
-      minus.addEventListener('click',()=>{item.qty--;if(item.qty<=0)cart.delete(id);renderCart();});
-      plus.addEventListener('click',()=>{item.qty++;renderCart();});
-      controls.append(minus,number,plus);line.append(info,controls);content.append(line);
+      const minus=document.createElement('button');minus.type='button';minus.textContent='−';minus.setAttribute('aria-label','Diminuir quantidade');
+      const qty=document.createElement('span');qty.textContent=v.qty;
+      const plus=document.createElement('button');plus.type='button';plus.textContent='+';plus.setAttribute('aria-label','Aumentar quantidade');
+      minus.addEventListener('click',()=>{v.qty--;if(v.qty<=0)cart.delete(id);render();});
+      plus.addEventListener('click',()=>{v.qty++;render();});
+      controls.append(minus,qty,plus);line.append(info,controls);area.append(line);
     });
+  }
+  function summary(){
+    const items=[...cart.values()].filter(v=>v.qty>0);
+    return ['Pedido — Cantina da Tete','',...items.map(v=>v.qty+'x '+v.name+' — '+money(v.qty*v.price)),'','Total: '+money(items.reduce((s,v)=>s+v.qty*v.price,0))].join('\\n');
   }
   document.getElementById('cart-email').addEventListener('click',()=>{
-    const entries=[...cart.values()].filter(v=>v.qty>0);
-    if(!entries.length)return;
-    const total=entries.reduce((s,v)=>s+v.qty*v.price,0);
-    const lines=['Olá! Gostaria de fazer este pedido na Cantina da Tete:','',...entries.map(v=>v.qty+'x '+v.name+' — '+money(v.price*v.qty)),'','Total: '+money(total)];
-    const subject=encodeURIComponent('Pedido - Cantina da Tete');
-    const body=encodeURIComponent(lines.join('\n'));
-    window.location.href='mailto:cantinasttete@gmail.com?subject='+subject+'&body='+body;
+    if(!cart.size)return;
+    location.href='mailto:cantinasttete@gmail.com?subject='+encodeURIComponent('Pedido - Cantina da Tete')+'&body='+encodeURIComponent('Olá! Gostaria de fazer este pedido:\\n\\n'+summary());
   });
   document.getElementById('cart-copy').addEventListener('click',async()=>{
-    const entries=[...cart.values()].filter(v=>v.qty>0);
-    const lines=['Pedido — Cantina da Tete','',...entries.map(v=>v.qty+'x '+v.name+' — '+money(v.price*v.qty)),'','Total: '+money(entries.reduce((s,v)=>s+v.qty*v.price,0))];
-    try{await navigator.clipboard.writeText(lines.join('\n'));showToast('Resumo copiado!');}
-    catch(e){const area=document.createElement('textarea');area.value=lines.join('\n');document.body.append(area);area.select();document.execCommand('copy');area.remove();showToast('Resumo copiado!');}
+    try{await navigator.clipboard.writeText(summary());toast.textContent='Resumo copiado!';toast.classList.add('show');setTimeout(()=>toast.classList.remove('show'),1600);}
+    catch(e){toast.textContent='Não foi possível copiar neste navegador.';toast.classList.add('show');}
   });
-  let active='todos';
-  function filterMenu(){
-    const term=search.value.trim().toLocaleLowerCase('pt-BR');let visible=0;
-    allItems.forEach(item=>{
-      const matchCategory=active==='todos'||item.category===active;
-      const matchText=(item.name+' '+item.category).toLocaleLowerCase('pt-BR').includes(term);
-      item.row.hidden=!(matchCategory&&matchText);
-    });
-    cards.forEach(card=>{
-      const hasVisible=[...card.querySelectorAll('.item')].some(row=>!row.hidden);
-      card.classList.toggle('is-empty',!hasVisible);if(hasVisible)visible++;
-    });
-    countLabel.textContent=visible+' '+(visible===1?'categoria encontrada':'categorias encontradas');
-  }
-  search.addEventListener('input',filterMenu);
-  filters.forEach(button=>button.addEventListener('click',()=>{
-    active=button.dataset.filter;
-    filters.forEach(b=>{const selected=b===button;b.classList.toggle('is-active',selected);b.setAttribute('aria-pressed',String(selected));});
-    filterMenu();
-  }));
-  filterMenu();renderCart();
+  render();
 })();
 </script>
 </body>
