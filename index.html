@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#70212b">
   <meta name="description" content="Cardápio da Cantina da Tetê. Salgados, bebidas e doces com carinho.">
-  <title>Cantina da Tetê</title>
+  <title>CANTINA DA TETE</title>
   <style>
     :root {
       --wine: #70212b;
@@ -206,6 +206,22 @@
       *, *::before, *::after { transition: none !important; }
     }
 
+
+    .customer-box{max-width:560px;margin:0 auto 22px;padding:20px;background:#fff;border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow)}
+    .customer-box label{display:block;color:var(--wine);font-weight:700;margin-bottom:8px}
+    .customer-box input{width:100%;padding:13px 14px;border:1px solid var(--line);border-radius:10px;font:inherit;font-size:16px;outline:none}
+    .customer-box input:focus{border-color:var(--wine);box-shadow:0 0 0 3px rgba(112,33,43,.1)}
+    .customer-box p,.order-submit-wrap p{margin:8px 0 0;color:var(--muted);font-size:12px}
+    .item{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:10px}
+    .pick-item{display:flex;align-items:center;gap:9px;min-width:0;cursor:pointer}
+    .pick-item input{width:19px;height:19px;flex:0 0 auto;accent-color:var(--wine)}
+    .qty-select{width:68px;padding:8px 6px;border:1px solid var(--line);border-radius:9px;background:#fff;color:var(--wine);font:600 14px Arial,sans-serif}
+    .qty-select:disabled{opacity:.35}
+    .order-submit-wrap{text-align:center;margin:26px auto 0}
+    .order-submit{border:0;border-radius:999px;background:var(--wine);color:#fff;padding:15px 28px;font-size:15px;font-weight:700;cursor:pointer;box-shadow:0 8px 22px rgba(83,35,34,.16)}
+    .order-submit:hover{background:var(--wine-dark)}
+    @media(max-width:760px){.customer-box{padding:16px}.item{grid-template-columns:minmax(0,1fr) auto}.pick-item{font-size:13px}}
+
     /* Experiência interativa do cardápio */
     .menu-tools { max-width: 720px; margin: 0 auto 25px; }
     .search-wrap { display:flex; align-items:center; gap:10px; background:#fff; border:1px solid var(--line); border-radius:14px; padding:0 15px; box-shadow:0 5px 18px rgba(83,35,34,.04); }
@@ -330,7 +346,7 @@
         <p>Confira nossas opções e preços</p>
       </div>
 
-      <div class="menu-grid">
+      <form id="order-form"><div class="customer-box"><label for="customer-name">Seu nome</label><input id="customer-name" name="nome" type="text" placeholder="Digite seu nome" autocomplete="name" required><p>Marque os produtos que deseja e escolha a quantidade.</p></div><div class="menu-grid">
         <article class="menu-card">
           <div class="card-icon" aria-hidden="true">🥟</div>
           <h3>Pastéis, empadão e salgados</h3>
@@ -354,7 +370,7 @@
           <div class="item"><span class="item-name">Mousse de limão</span><span class="price">R$ 7,00</span></div>
           <div class="item"><span class="item-name">Mousse de morango</span><span class="price">R$ 7,00</span></div>
         </article>
-      </div>
+      </div><div class="order-submit-wrap"><button class="order-submit" type="submit">Enviar meu pedido</button><p>Seu aplicativo de e-mail será aberto com o pedido preenchido.</p></div></form>
     </section>
 
     <aside class="blessing">
@@ -372,67 +388,37 @@
 
 <script>
 (() => {
-  const cart = new Map();
-  const money = n => n.toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
-  const cards = [...document.querySelectorAll('.menu-card')];
-  cards.forEach(card => {
-    card.querySelectorAll('.item').forEach(row => {
-      const name = row.querySelector('.item-name').innerText.replace(/\\s+/g,' ').trim();
-      const price = Number(row.querySelector('.price').textContent.replace('R$','').trim().replace('.','').replace(',','.'));
-      const id = name;
-      const add = document.createElement('button');
-      add.type='button'; add.className='item-action'; add.textContent='+ Adicionar';
-      add.addEventListener('click',()=>{
-        const item=cart.get(id)||{name,price,qty:0}; item.qty++; cart.set(id,item); render();
-        toast.textContent=name+' adicionado ao pedido'; toast.classList.add('show');
-        setTimeout(()=>toast.classList.remove('show'),1600);
-      });
-      row.append(add);
+  const form=document.getElementById('order-form');
+  if(!form)return;
+  document.querySelectorAll('.menu-card .item').forEach((row)=>{
+    const name=row.querySelector('.item-name').innerText.replace(/\\s+/g,' ').trim();
+    const price=row.querySelector('.price').textContent.trim();
+    const label=document.createElement('label');
+    label.className='pick-item';
+    const check=document.createElement('input');
+    check.type='checkbox';check.className='item-check';check.value=name;
+    const text=document.createElement('span');text.textContent=name;
+    label.append(check,text);
+    const qty=document.createElement('select');qty.className='qty-select';qty.setAttribute('aria-label','Quantidade de '+name);qty.disabled=true;
+    for(let n=1;n<=10;n++){const option=document.createElement('option');option.value=n;option.textContent=n;qty.append(option);}
+    check.addEventListener('change',()=>{qty.disabled=!check.checked;});
+    row.replaceChildren(label,qty);
+    row.dataset.price=price;
+  });
+  form.addEventListener('submit',(event)=>{
+    event.preventDefault();
+    const customer=document.getElementById('customer-name').value.trim();
+    const chosen=[...form.querySelectorAll('.menu-card .item')].filter(row=>row.querySelector('.item-check').checked);
+    if(!customer){document.getElementById('customer-name').focus();return;}
+    if(!chosen.length){alert('Selecione pelo menos um produto do cardápio.');return;}
+    const lines=chosen.map(row=>{
+      const name=row.querySelector('.item-check').value;
+      const qty=Number(row.querySelector('.qty-select').value);
+      return qty+'x '+name+' — '+row.dataset.price;
     });
+    const body='Olá! Meu nome é '+customer+' e gostaria de fazer este pedido:\\n\\n'+lines.join('\\n');
+    location.href='mailto:cantinasttete@gmail.com?subject='+encodeURIComponent('Pedido - Cantina da Tete')+'&body='+encodeURIComponent(body);
   });
-  const fab=document.createElement('button'); fab.type='button'; fab.className='cart-fab'; fab.innerHTML='Meu pedido <span class="cart-count" id="cart-count">0</span>';
-  const backdrop=document.createElement('div'); backdrop.className='cart-backdrop';
-  const panel=document.createElement('aside'); panel.className='cart-panel'; panel.setAttribute('aria-label','Resumo do pedido'); panel.setAttribute('aria-hidden','true');
-  panel.innerHTML='<div class="cart-head"><h2>Meu pedido</h2><button class="cart-close" type="button" aria-label="Fechar">×</button></div><div class="cart-content" id="cart-content"></div><div class="cart-foot"><div class="cart-total"><span>Total</span><span id="cart-total">R$ 0,00</span></div><div class="cart-actions"><button class="cart-copy" id="cart-email" type="button" disabled>Enviar pedido por e-mail</button><button class="cart-copy cart-copy-secondary" id="cart-copy" type="button" disabled>Copiar resumo</button></div><p class="cart-note">O e-mail será aberto no seu aplicativo para você conferir e enviar.</p></div>';
-  const toast=document.createElement('div'); toast.className='toast'; toast.setAttribute('role','status');
-  document.body.append(fab,backdrop,panel,toast);
-  function open(){backdrop.classList.add('open');panel.classList.add('open');panel.setAttribute('aria-hidden','false');document.body.style.overflow='hidden';}
-  function close(){backdrop.classList.remove('open');panel.classList.remove('open');panel.setAttribute('aria-hidden','true');document.body.style.overflow='';}
-  fab.addEventListener('click',open); backdrop.addEventListener('click',close); panel.querySelector('.cart-close').addEventListener('click',close);
-  document.addEventListener('keydown',e=>{if(e.key==='Escape')close();});
-  function render(){
-    const items=[...cart.entries()].filter(([,v])=>v.qty>0);
-    document.getElementById('cart-count').textContent=items.reduce((s,[,v])=>s+v.qty,0);
-    document.getElementById('cart-total').textContent=money(items.reduce((s,[,v])=>s+v.qty*v.price,0));
-    document.getElementById('cart-email').disabled=!items.length;
-    document.getElementById('cart-copy').disabled=!items.length;
-    const area=document.getElementById('cart-content'); area.replaceChildren();
-    if(!items.length){const p=document.createElement('p');p.className='cart-empty';p.textContent='Seu pedido está vazio. Escolha os itens no cardápio.';area.append(p);return;}
-    items.forEach(([id,v])=>{
-      const line=document.createElement('div');line.className='cart-line';
-      const info=document.createElement('div');const title=document.createElement('strong');title.textContent=v.name;const sub=document.createElement('small');sub.textContent=money(v.price)+' cada';info.append(title,sub);
-      const controls=document.createElement('div');controls.className='quantity';
-      const minus=document.createElement('button');minus.type='button';minus.textContent='−';minus.setAttribute('aria-label','Diminuir quantidade');
-      const qty=document.createElement('span');qty.textContent=v.qty;
-      const plus=document.createElement('button');plus.type='button';plus.textContent='+';plus.setAttribute('aria-label','Aumentar quantidade');
-      minus.addEventListener('click',()=>{v.qty--;if(v.qty<=0)cart.delete(id);render();});
-      plus.addEventListener('click',()=>{v.qty++;render();});
-      controls.append(minus,qty,plus);line.append(info,controls);area.append(line);
-    });
-  }
-  function summary(){
-    const items=[...cart.values()].filter(v=>v.qty>0);
-    return ['Pedido — Cantina da Tete','',...items.map(v=>v.qty+'x '+v.name+' — '+money(v.qty*v.price)),'','Total: '+money(items.reduce((s,v)=>s+v.qty*v.price,0))].join('\\n');
-  }
-  document.getElementById('cart-email').addEventListener('click',()=>{
-    if(!cart.size)return;
-    location.href='mailto:cantinasttete@gmail.com?subject='+encodeURIComponent('Pedido - Cantina da Tete')+'&body='+encodeURIComponent('Olá! Gostaria de fazer este pedido:\\n\\n'+summary());
-  });
-  document.getElementById('cart-copy').addEventListener('click',async()=>{
-    try{await navigator.clipboard.writeText(summary());toast.textContent='Resumo copiado!';toast.classList.add('show');setTimeout(()=>toast.classList.remove('show'),1600);}
-    catch(e){toast.textContent='Não foi possível copiar neste navegador.';toast.classList.add('show');}
-  });
-  render();
 })();
 </script>
 </body>
