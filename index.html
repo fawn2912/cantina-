@@ -4,8 +4,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#70212b">
-  <meta name="description" content="Cardápio da Cantina da Tete. Salgados, bebidas e doces com carinho.">
-  <title>Cantina da Tete</title>
+  <meta name="description" content="Cardápio da Cantina da Tetê. Salgados, bebidas e doces com carinho.">
+  <title>Cantina da Tetê</title>
   <style>
     :root {
       --wine: #70212b;
@@ -37,9 +37,9 @@
       justify-content: space-between;
       gap: 20px;
     }
-    .brand { display: flex; align-items: center; gap: 13px; color: var(--wine); text-decoration: none; }
-    .brand-mark { width: 42px; height: 48px; flex: 0 0 auto; }
-    .brand-name { font: 600 22px/1.08 Georgia, serif; text-decoration: none; }
+    .brand { display: flex; align-items: center; gap: 16px; color: var(--wine); text-decoration: none; min-width: 0; }
+    .parish-logo { width: 150px; height: auto; flex: 0 0 auto; display: block; }
+    .brand-name { font: 600 22px/1.08 Georgia, serif; text-decoration: none; white-space: nowrap; }
     .brand-name small { display: block; margin-top: 5px; font: italic 12px Arial, sans-serif; color: var(--muted); text-decoration: none; }
     .nav-link {
       text-decoration: none; color: var(--wine); font-size: 14px;
@@ -63,7 +63,7 @@
     }
     h1 { margin: 13px 0 14px; color: var(--wine); font: 500 clamp(38px, 5.2vw, 64px)/1.03 Georgia, serif; }
     .hero-copy p { max-width: 470px; margin: 0; color: #59484a; font-size: 17px; }
-    .quote { display: block; margin-top: 22px; color: var(--wine); font: italic 18px Georgia, serif; }
+    .quote { display: block; margin-top: 22px; color: var(--wine); font: italic 18px Georgia, serif; text-decoration: none; border: 0; }
     .menu-button {
       display: inline-flex; margin-top: 26px; padding: 13px 21px;
       color: #fff; background: var(--wine); border-radius: 999px;
@@ -109,7 +109,7 @@
     footer span { display: block; margin-top: 6px; color: #f0d8d2; font-size: 13px; }
     @media (max-width: 760px) {
       .site-header { min-height: 74px; width: min(100% - 28px, 600px); }
-      .brand-name { font-size: 19px; }
+      .parish-logo { width: 118px; }\n      .brand-name { font-size: 19px; }
       .nav-link { padding: 9px 13px; font-size: 13px; }
       .hero-inner { width: min(100% - 28px, 600px); grid-template-columns: 1fr; gap: 0; text-align: center; }
       .hero-copy { padding: 42px 0 10px; }
@@ -124,7 +124,7 @@
       .blessing { width: min(100% - 28px, 600px); margin: 30px auto 40px; padding: 24px 18px; }
     }
     @media (max-width: 360px) {
-      .brand-mark { width: 34px; }
+      .parish-logo { width: 92px; }
       .brand-name { font-size: 17px; }
       .nav-link { font-size: 12px; padding: 8px 10px; }
       .hero-inner, .site-header, .menu-section, .blessing { width: calc(100% - 22px); }
@@ -187,7 +187,7 @@
     }
     @media (max-width: 390px) {
       .site-header { width: calc(100% - 24px); }
-      .brand-mark { width: 32px; height: 40px; }
+      .parish-logo { width: 82px; }
       .brand-name { max-width: 165px; font-size: 16px; }
       .nav-link { font-size: 11px; padding: 8px 10px; }
       .hero-inner, .menu-section, .blessing { width: calc(100% - 24px); }
@@ -215,11 +215,17 @@
 </head>
 <body>
   <header class="site-header">
-    <a class="brand" href="#" aria-label="Cantina da Tete - início">
-      <svg class="brand-mark" viewBox="0 0 48 56" aria-hidden="true">
-        <path d="M24 3v10M19 8h10M8 53V27l16-13 16 13v26M17 53V36a7 7 0 0 1 14 0v17M4 53h40" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+    <a class="brand" href="#" aria-label="Cantina da Tetê - início">
+      <svg class="parish-logo" viewBox="0 0 330 92" role="img" aria-label="Paróquia Santa Teresinha, Seropédica RJ">
+        <g fill="none" stroke="#70212b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M244 15V4m-5 6h10M244 15l-2 10 8 8 26 12v25M244 25l-16 13v31M226 38l27 8 25 0M228 68V49l22-11 28 11M237 68V53h10v15M281 45v23M224 69h60"/>
+        </g>
+        <text x="7" y="24" fill="#70212b" font-family="Georgia,serif" font-size="10" letter-spacing="2">PARÓQUIA</text>
+        <text x="5" y="55" fill="#70212b" font-family="Georgia,serif" font-style="italic" font-size="31">Santa</text>
+        <text x="5" y="82" fill="#70212b" font-family="Georgia,serif" font-style="italic" font-size="31">Teresinha</text>
+        <text x="174" y="86" fill="#8b6965" font-family="Arial,sans-serif" font-size="8" letter-spacing="1.2">SEROPÉDICA - RJ</text>
       </svg>
-      <span class="brand-name">Cantina da Tete<small>Sabor, fé e acolhimento ♡</small></span>
+      <span class="brand-name">Cantina da Tetê<small>Sabor, fé e acolhimento</small></span>
     </a>
     <a class="nav-link" href="#cardapio">Ver cardápio ↓</a>
   </header>
@@ -229,7 +235,7 @@
       <div class="hero-inner">
         <div class="hero-copy">
           <span class="eyebrow">Um cantinho especial</span>
-          <h1>Cantina da Tete</h1>
+          <h1>Cantina da Tetê</h1>
           <p>Seja bem-vindo(a)! Preparamos tudo com carinho, fé e sabor para tornar seu dia mais especial.</p>
           <span class="quote">“Minha vocação é o amor.”</span>
           <a class="menu-button" href="#cardapio">Confira nosso cardápio</a>
@@ -306,7 +312,7 @@
   </main>
 
   <footer>
-    <strong>Cantina da Tete</strong>
+    <strong>Cantina da Tetê</strong>
     <span>Com fé, servimos com amor. ♡</span>
   </footer>
 </body>
